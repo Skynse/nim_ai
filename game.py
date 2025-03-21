@@ -86,13 +86,29 @@ class MinMaxTree:
         if node.bag.red_marbles == 0 and node.bag.blue_marbles == 0:
             return successors
 
-        # Generate successors by removing 1 or 2 marbles from the bag
-        for i in range(1, 3):  # Remove 1 or 2 marbles, could either be red or blue, or both
-            if node.bag.red_marbles >= i:
-                new_bag = Bag(node.bag.red_marbles - i, node.bag.blue_marbles)
+        # Determine move ordering based on game version
+        if self.game_state.version == "standard":
+            move_order = [
+                ("red", 2),
+                ("blue", 2),
+                ("red", 1),
+                ("blue", 1),
+            ]
+        else:  # misère version
+            move_order = [
+                ("blue", 1),
+                ("red", 1),
+                ("blue", 2),
+                ("red", 2),
+            ]
+
+        # Generate successors based on the move order
+        for color, count in move_order:
+            if color == "red" and node.bag.red_marbles >= count:
+                new_bag = Bag(node.bag.red_marbles - count, node.bag.blue_marbles)
                 successors.append(Node(None, new_bag, not node.is_max, node.min, node.max))
-            if node.bag.blue_marbles >= i:
-                new_bag = Bag(node.bag.red_marbles, node.bag.blue_marbles - i)
+            elif color == "blue" and node.bag.blue_marbles >= count:
+                new_bag = Bag(node.bag.red_marbles, node.bag.blue_marbles - count)
                 successors.append(Node(None, new_bag, not node.is_max, node.min, node.max))
 
         return successors
